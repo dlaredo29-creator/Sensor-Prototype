@@ -24,13 +24,19 @@ Computer Coding Studio, fall 2026. The camera, the model, one worked signal and 
 
 ```js
 window.sense = {
-  state: 'here',                          // one word from your State Table
-  signals: { present: 0.98, open: 0.02 }, // each a number from 0 to 1
-  since: 184203.5                         // performance.now() when this state began
+  state: 'here',                                      // one word from your State Table
+  signals: { present: 0.98, open: 0.02, eyesClosed: 0, smiling: 0, browRaised: 0 }, // each a number from 0 to 1
+  since: 184203.5                                     // performance.now() when this state began
 };
 ```
 
 `piece.js` reads this and nothing else. It never touches the camera. That is why the piece keeps running on `fake-sense.js` when no camera is there, and why a scene you build in November can run off the sensor you build now.
+
+In the camera example, `eyesClosed` is `1` only while both left and right blink scores are above `0.4`. When they stay above that threshold for 2 seconds, the `dark` state turns the screen black.
+
+The `smiling` signal is `1` only while both mouth smile scores are above `0.7`. Holding that expression for 4 seconds changes to the `bright` state and fills the screen with white.
+
+The `browRaised` signal is `1` while `browInnerUp` is above `0.9`. Holding it for 5 seconds increases the canvas resolution and enlarges the circle.
 
 ## Adding your signal
 

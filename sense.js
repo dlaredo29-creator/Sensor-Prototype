@@ -37,6 +37,29 @@ const SIGNALS = {
   // open: the worked signal. jawOpen is one of the 52 scores, already 0 to 1.
   open: result => score(result, 'jawOpen'),
 
+  // eyesClosed is a direct threshold so its 2-second hold starts immediately.
+  eyesClosed: result => (
+    score(result, 'eyeBlinkLeft') > 0.4 &&
+    score(result, 'eyeBlinkRight') > 0.4
+      ? 1
+      : 0
+  ),
+
+  // smiling is a direct threshold so its 4-second hold starts immediately.
+  smiling: result => (
+    score(result, 'mouthSmileLeft') > 0.7 &&
+    score(result, 'mouthSmileRight') > 0.7
+      ? 1
+      : 0
+  ),
+
+  // browRaised is a direct threshold so its 5-second hold starts immediately.
+  browRaised: result => (
+    score(result, 'browInnerUp') > 0.9
+      ? 1
+      : 0
+  ),
+
   // Your signal goes here. Two patterns to copy:
   //
   // A named score from the lab (the B panel shows every name):
@@ -114,7 +137,10 @@ function tick() {
     for (const name of window.TABLE.signals) {
       const read = SIGNALS[name];
       if (!read) continue;
-      signals[name] += (clamp(read(result)) - signals[name]) * SMOOTHING;
+      const value = clamp(read(result));
+      signals[name] = name === 'eyesClosed' || name === 'smiling' || name === 'browRaised'
+        ? value
+        : signals[name] + (value - signals[name]) * SMOOTHING;
     }
     latestScores = result.faceBlendshapes[0] ? result.faceBlendshapes[0].categories : [];
   }

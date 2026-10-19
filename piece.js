@@ -7,14 +7,21 @@
 const canvas = document.querySelector('#piece');
 const ctx = canvas.getContext('2d');
 
-function resize() {
-  canvas.width = innerWidth * devicePixelRatio;
-  canvas.height = innerHeight * devicePixelRatio;
+function resize(quality = 1) {
+  const pixelRatio = Math.min(devicePixelRatio * quality, 4);
+  canvas.width = innerWidth * pixelRatio;
+  canvas.height = innerHeight * pixelRatio;
 }
-addEventListener('resize', resize);
+addEventListener('resize', () => resize());
 resize();
 
-const COLORS = { nobody: '#0b0b0d', here: '#1d2a3a', open: '#3a1d2a' };
+const COLORS = {
+  nobody: '#0b0b0d',
+  here: '#1d2a3a',
+  open: '#3a1d2a',
+  dark: '#000000',
+  bright: '#ffffff',
+};
 
 // A state with no colour above still gets a bright one of its own, picked from
 // its name, so a new row in table.js is visible the moment it fires.
@@ -28,12 +35,22 @@ function colorFor(state) {
 function frame() {
   const { state, signals, since } = window.sense;
   const held = performance.now() - since; // ms in this state
+  const quality = state === 'enhanced' ? 1.5 : 1;
+  const pixelRatio = Math.min(devicePixelRatio * quality, 4);
+  if (
+    canvas.width !== Math.round(innerWidth * pixelRatio) ||
+    canvas.height !== Math.round(innerHeight * pixelRatio)
+  ) {
+    resize(quality);
+  }
 
   ctx.fillStyle = colorFor(state);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  if (state !== 'nobody') {
-    const r = Math.min(canvas.width, canvas.height) * (0.05 + 0.35 * (signals.open || 0));
+  if (state !== 'nobody' && state !== 'bright') {
+    const enlargement = state === 'enhanced' ? 1.75 : 1;
+    const r = Math.min(canvas.width, canvas.height) *
+      (0.05 + 0.35 * (signals.open || 0)) * enlargement;
     const fadeIn = Math.min(1, held / 600);
     ctx.globalAlpha = fadeIn;
     ctx.fillStyle = '#f2efe9';
